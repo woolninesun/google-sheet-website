@@ -1,0 +1,4 @@
+semantic/* linguist-vendored
+
+src/static/semantic/* linguist-generated=true
+package-lock.json linguist-generated=true
