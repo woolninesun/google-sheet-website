@@ -1,0 +1,50 @@
+.pushable {
+  &:not(body) {
+    transform: none !important;
+  }
+
+  .ui.sidebar {
+    position: fixed !important;
+  }
+
+  .pusher {
+    min-height: 100vh !important;
+  }
+}
+
+.ui.fixed.left.menu+.ui.grid {
+  padding-top: 1rem;
+}
+
+.ui.grid {
+  margin: 0 !important;
+
+  &>.row {
+    padding: 0 !important;
+  }
+
+  .hidden {
+    display: none !important;
+  }
+}
+
+.mobile-sidebar-container {
+  .mobile-sidebar-toggle {
+    height: 100vh !important;
+    padding-right: .5em !important;
+    padding-left: .5em !important;
+  }
+
+  .column {
+    width: 100% !important;
+    margin-left: 1.5rem !important;
+
+  }
+}
+
+.computer-sidebar-container {
+  .column {
+    width: 100% !important;
+    margin-left: 15rem !important;
+  }
+}
