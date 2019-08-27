@@ -77,8 +77,7 @@ const BetterSheetApp: React.FunctionComponent<{}> = () => {
     let sheetID: string = urlParams.get('sheetid') || '';
 
     if (sheetID === '') {
-      // setIsError(true);
-      return
+      sheetID = '1LBQajGNLrw5Rjo7pGuxKJM1prlQ9XPE-0aTJsiz5eQQ'; // Demo && Tutorial
     }
 
     const apidomain: string = 'https://spreadsheets.google.com';
