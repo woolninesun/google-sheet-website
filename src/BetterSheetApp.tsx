@@ -1,6 +1,5 @@
 import React from 'react';
 
-import './static/semantic/semantic.min.css';
 import './BetterSheetApp.scss';
 
 import DataViewTab from './DataViewTab';

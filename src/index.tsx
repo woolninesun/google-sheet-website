@@ -4,7 +4,7 @@ import 'react-app-polyfill/stable'
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-import 'normalize.css';
+import './static/semantic/semantic.min.css';
 import './index.scss';
 
 import BetterSheetApp from './BetterSheetApp';
