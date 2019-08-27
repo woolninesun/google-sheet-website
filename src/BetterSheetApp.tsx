@@ -2,17 +2,22 @@ import React from 'react';
 
 import './BetterSheetApp.scss';
 
-import DataViewTab from './DataViewTab';
+import DataViewTab from './components/DataViewTab';
 import TabSidebar from './components/TabSidebar';
 import Loading from './components/Loading';
 
-import { getStringFromRawObject, getRowDataFromWorksheetEntries } from './utilities/gsx';
+import {
+  getStringFromRawObject,
+  getRowWorksheetDataFromEntries,
+  getDataFromWorksheetEntries
+} from './utilities/gsx';
 
-import { WorksheetLink, WorksheetEntry } from './interface/gsx';
-import { RowData, WorksheetData, Settings } from './interface/app';
+import {
+  defaultSettings,
+  getSettingsFromRawData
+} from './utilities/app';
 
-const defaultSettings: Settings = { title: '', links: [], infos: {} };
-const defaultSettingData: RowData = { attribute: '', arguments1: '', arguments2: '' };
+import { WorksheetData, Settings } from './interface/app';
 
 const BetterSheetApp: React.FunctionComponent<{}> = () => {
   const [isLoading, setIsLoading] = React.useState<boolean>(true);
@@ -21,63 +26,11 @@ const BetterSheetApp: React.FunctionComponent<{}> = () => {
   const [worksheets, setWorksheets] = React.useState<WorksheetData[]>([]);
 
   React.useEffect(() => {
-    const getSettingsFromWorksheet = (WorksheetUrl: string) => {
-      fetch(WorksheetUrl)
-        .then(response => response.json())
-        .then((result) => {
-          if (result && result.feed && result.feed.title && result.feed.entry) {
-            let rawSettings: Settings = defaultSettings;
-            getRowDataFromWorksheetEntries(result.feed.entry).forEach(
-              (rowData: RowData) => {
-                const rawSetting = Object.assign(defaultSettingData, rowData);
-
-                if (rawSetting.attribute === 'title') {
-                  rawSettings.title = rawSetting.arguments1;
-                }
-
-                if (rawSetting.attribute === 'links' && rawSetting.arguments1 !== '') {
-                  rawSettings.links.push({
-                    name: rawSetting.arguments1,
-                    href: rawSetting.arguments2
-                  });
-                }
-
-                if (rawSetting.attribute === 'infos' && rawSetting.arguments1 !== '') {
-                  rawSettings.infos[rawSetting.arguments1] = rawSetting.arguments2;
-                }
-              }
-            );
-            setSettings({ ...rawSettings });
-          }
-        }, (error) => {
-          // setIsError(true);
-        });
-    }
-
-    const getWorksheetLink = (links: WorksheetLink[], target: RegExp): string => {
-      const link: WorksheetLink | undefined = links.find(link => target.test(link.rel));
-      return link ? `${link.href}?alt=json` : '';
-    }
-
-    const getWorksheetDataFromEntries = (entries: WorksheetEntry[]): WorksheetData[] => {
-      let worksheets: WorksheetData[] = [];
-      entries.forEach((entry: WorksheetEntry) => {
-        const sheetTitle = getStringFromRawObject(entry.title);
-        const sheetLink = getWorksheetLink(entry.link, /#listfeed/);
-
-        if (sheetTitle === '' || sheetLink === '') { return; }
-        if (sheetTitle === 'Settings') { getSettingsFromWorksheet(sheetLink); return; }
-
-        worksheets.push({ title: sheetTitle, link: sheetLink });
-      });
-      return worksheets;
-    }
-
     const urlParams: URLSearchParams = new URLSearchParams(window.location.search);
     let sheetID: string = urlParams.get('sheetid') || '';
 
     if (sheetID === '') {
-      sheetID = '1LBQajGNLrw5Rjo7pGuxKJM1prlQ9XPE-0aTJsiz5eQQ'; // Demo && Tutorial
+      sheetID = '1LBQajGNLrw5Rjo7pGuxKJM1prlQ9XPE-0aTJsiz5eQQ'; // Demo && Tutorial sheet
     }
 
     const apidomain: string = 'https://spreadsheets.google.com';
@@ -86,14 +39,50 @@ const BetterSheetApp: React.FunctionComponent<{}> = () => {
 
     fetch(apiUrl)
       .then(response => response.json())
-      .then((result) => {
+      // Set document title and Get RowWorksheetDatas.
+      .then(async (result) => {
         if (result && result.feed && result.feed.title && result.feed.entry) {
           setTitle(getStringFromRawObject(result.feed.title));
-          setWorksheets(getWorksheetDataFromEntries(result.feed.entry));
-          setIsLoading(false);
+
+          let rowWorksheetDatas = getRowWorksheetDataFromEntries(result.feed.entry);
+          for (let index = 0; index < rowWorksheetDatas.length; index++) {
+            const rowWorksheetData = rowWorksheetDatas[index];
+
+            await fetch(rowWorksheetData.link)
+              .then(response => response.json())
+              .then((result) => {
+                if (result && result.feed && result.feed.entry) {
+                  const data = getDataFromWorksheetEntries(result.feed.entry);
+                  rowWorksheetDatas[index].data = data;
+                }
+              });
+          }
+          return rowWorksheetDatas;
         }
-      }, (error) => {
-        // setIsError(true);
+      })
+      // Get finalSettings and finalWorksheetData.
+      .then((rowWorksheetDatas) => {
+        let finalSettings: Settings = defaultSettings;
+        let finalWorksheetDatas: WorksheetData[] = [];
+
+        if (rowWorksheetDatas) {
+          rowWorksheetDatas.forEach((rowWorksheetData) => {
+            if (rowWorksheetData.title === 'Settings') {
+              finalSettings = getSettingsFromRawData(rowWorksheetData);
+              return;
+            }
+            finalWorksheetDatas.push(rowWorksheetData);
+          });
+        }
+
+        return { settings: finalSettings, worksheets: finalWorksheetDatas };
+      })
+      // Set Settings, Worksheets and isLoading state
+      .then((result) => {
+        const { settings, worksheets } = result;
+        setSettings(settings);
+        setWorksheets(worksheets);
+        setIsLoading(false);
       });
   }, []);
 

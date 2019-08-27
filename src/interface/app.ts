@@ -5,6 +5,7 @@ export interface RowData {
 export interface WorksheetData {
   title: string,
   link: string,
+  data: RowData[]
 };
 
 export interface MenuItems {
