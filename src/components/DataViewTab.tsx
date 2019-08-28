@@ -7,7 +7,7 @@ import CardView from './CardView';
 import './DataViewTab.scss';
 import 'github-markdown-css'
 
-import { WorksheetData } from '../interface/app';
+import { WorksheetData } from '../interface';
 
 interface DataViewProps {
   worksheet: WorksheetData

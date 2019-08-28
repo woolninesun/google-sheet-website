@@ -4,7 +4,7 @@ import './TabSidebar.scss';
 
 import { Sidebar, Grid, Menu, Icon, Divider, Header } from 'semantic-ui-react';
 
-import { MenuItems } from '../interface/app';
+import { MenuItems } from '../interface';
 
 interface TabSidebarProps {
   title: string,

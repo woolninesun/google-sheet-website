@@ -4,7 +4,7 @@ import './CardView.scss';
 
 import { Card, Table } from 'semantic-ui-react';
 
-import { RowData } from '../interface/app';
+import { RowData } from '../interface';
 
 interface CardViewProps {
   headerContent: string[],
